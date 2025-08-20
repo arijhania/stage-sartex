@@ -1,0 +1,264 @@
+//////////////machines 
+
+//////////machines.html
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Machines - Atelier</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  body { font-family:'Segoe UI', Arial, sans-serif; margin:0; background:#f7f9fc; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; background:linear-gradient(to right,#3a7bd5,#00d2ff); color:white; }
+  header h1 { margin:0; font-size:24px; }
+  #logoutBtn { padding:6px 12px; border:none; border-radius:4px; cursor:pointer; background:white; color:#333; font-weight:bold; }
+  #main { display:flex; margin:20px; }
+  #sidebar { width:250px; background:white; padding:10px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+  #sidebar h3 { margin-top:0; }
+  .machine-item { padding:6px 10px; margin-bottom:6px; background:#3a7bd5; color:white; cursor:pointer; border-radius:4px; }
+  #canvas { flex:1; margin-left:20px; background:white; border-radius:8px; height:500px; position:relative; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+  .canvas-machine { position:absolute; padding:6px 10px; background:#00d2ff; color:white; border-radius:4px; cursor:move; }
+  .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+  .modal-content { background:white; padding:20px; border-radius:8px; width:350px; }
+  .modal-content input { width:100%; padding:6px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc; }
+  .modal-content button { width:100%; padding:8px; background:#3a7bd5; color:white; border:none; border-radius:4px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="atelierTitle">Machines</h1>
+  <button id="logoutBtn">Se déconnecter</button>
+</header>
+
+<div id="main">
+  <div id="sidebar">
+    <h3>Machines disponibles</h3>
+    <div id="machineList"></div>
+    <button id="addMachineBtn">Ajouter Machine</button>
+  </div>
+  <div id="canvas"></div>
+</div>
+
+<!-- Modal Ajouter / Modifier -->
+<div class="modal" id="machineModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Ajouter Machine</h3>
+    <input type="text" id="machineCode" placeholder="Code">
+    <input type="text" id="machineName" placeholder="Nom">
+    <button id="saveMachineBtn">Sauvegarder</button>
+  </div>
+</div>
+
+<!-- Modal Infos -->
+<div class="modal" id="infoModal">
+  <div class="modal-content" id="infoContent">
+    <h3>Infos Machine</h3>
+    <div id="machineInfo"></div>
+    <button onclick="document.getElementById('infoModal').style.display='none'">Fermer</button>
+  </div>
+</div>
+
+<script src="js/machines.js"></script>
+</body>
+</html>
+
+
+
+
+
+///////machines.js 
+
+
+
+
+
+// Vérifier connexion
+if(!sessionStorage.getItem('atelierId')) window.location.href = 'ateliers.html';
+
+const atelierId = sessionStorage.getItem('atelierId');
+document.getElementById('atelierTitle').textContent = `Machines - Atelier ${atelierId}`;
+
+const machineListDiv = document.getElementById('machineList');
+const canvas = document.getElementById('canvas');
+const addBtn = document.getElementById('addMachineBtn');
+const machineModal = document.getElementById('machineModal');
+const modalTitle = document.getElementById('modalTitle');
+const machineCodeInput = document.getElementById('machineCode');
+const machineNameInput = document.getElementById('machineName');
+const saveMachineBtn = document.getElementById('saveMachineBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const infoModal = document.getElementById('infoModal');
+const machineInfoDiv = document.getElementById('machineInfo');
+
+let machinesSidebar = [];
+let machinesCanvas = [];
+let editMachineId = null;
+
+// Logout
+logoutBtn.addEventListener('click', () => { sessionStorage.clear(); window.location.href='index.html'; });
+
+// Ouvrir modal Ajouter
+addBtn.addEventListener('click', () => {
+    editMachineId = null;
+    modalTitle.textContent = 'Ajouter Machine';
+    machineCodeInput.value = '';
+    machineNameInput.value = '';
+    machineModal.style.display = 'flex';
+});
+
+// Fermer modal en cliquant en dehors
+window.addEventListener('click', e => { 
+    if(e.target === machineModal) machineModal.style.display = 'none';
+    if(e.target === infoModal) infoModal.style.display = 'none';
+});
+
+// Charger machines
+async function loadMachines(){
+    // Sidebar
+    const resSidebar = await fetch(`http://localhost:3000/api/machines?atelierId=${atelierId}&scope=sidebar`);
+    machinesSidebar = await resSidebar.json();
+    renderSidebar();
+
+    // Canvas
+    const resCanvas = await fetch(`http://localhost:3000/api/machines?atelierId=${atelierId}&scope=canvas`);
+    machinesCanvas = await resCanvas.json();
+    renderCanvas();
+}
+
+// Render Sidebar
+function renderSidebar(){
+    machineListDiv.innerHTML = '';
+    machinesSidebar.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'machine-item';
+        div.textContent = m.nom;
+        div.draggable = true;
+        div.dataset.id = m.id;
+        div.addEventListener('dragstart', dragStart);
+        machineListDiv.appendChild(div);
+    });
+}
+
+// Drag & Drop
+let draggedId = null;
+function dragStart(e){
+    draggedId = e.target.dataset.id;
+}
+
+canvas.addEventListener('dragover', e => e.preventDefault());
+canvas.addEventListener('drop', async e => {
+    if(!draggedId) return;
+    const x = e.offsetX;
+    const y = e.offsetY;
+    await fetch(`http://localhost:3000/api/machines/${draggedId}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({x, y})
+    });
+    draggedId = null;
+    loadMachines();
+});
+
+// Render Canvas
+function renderCanvas(){
+    canvas.innerHTML = '';
+    machinesCanvas.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'canvas-machine';
+        div.style.left = m.x + 'px';
+        div.style.top = m.y + 'px';
+        div.textContent = m.nom;
+        div.dataset.id = m.id;
+
+        // Déplacement simple
+        div.onmousedown = dragMouseDown;
+
+        // Clic pour infos
+        div.onclick = async () => {
+            const res = await fetch(`http://localhost:3000/api/machines/${m.id}`);
+            const info = await res.json();
+            machineInfoDiv.innerHTML = `
+                <p>ID: ${info.id}</p>
+                <p>Code: ${info.code}</p>
+                <p>Nom: ${info.nom}</p>
+                <p>Status: ${info.status}</p>
+                <p>X: ${info.x}</p>
+                <p>Y: ${info.y}</p>
+            `;
+            infoModal.style.display='flex';
+        };
+
+        // Bouton Supprimer
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent='Supprimer';
+        deleteBtn.style.marginLeft='5px';
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if(!confirm('Supprimer cette machine ?')) return;
+            await fetch(`http://localhost:3000/api/machines/${m.id}`, {method:'DELETE'});
+            loadMachines();
+        };
+        div.appendChild(deleteBtn);
+
+        canvas.appendChild(div);
+    });
+}
+
+// Drag déplacement canvas
+let offsetX=0, offsetY=0, currentDiv=null;
+function dragMouseDown(e){
+    e.preventDefault();
+    currentDiv = e.target;
+    offsetX = e.clientX - currentDiv.offsetLeft;
+    offsetY = e.clientY - currentDiv.offsetTop;
+    document.onmousemove = elementDrag;
+    document.onmouseup = closeDragElement;
+}
+async function elementDrag(e){
+    e.preventDefault();
+    currentDiv.style.left = (e.clientX - offsetX) + 'px';
+    currentDiv.style.top = (e.clientY - offsetY) + 'px';
+}
+async function closeDragElement(e){
+    document.onmouseup = null;
+    document.onmousemove = null;
+    // Save new position
+    const id = currentDiv.dataset.id;
+    const x = parseInt(currentDiv.style.left);
+    const y = parseInt(currentDiv.style.top);
+    await fetch(`http://localhost:3000/api/machines/${id}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({x,y})
+    });
+    loadMachines();
+    currentDiv = null;
+}
+
+// Ajouter / Modifier machine
+saveMachineBtn.addEventListener('click', async () => {
+    const code = machineCodeInput.value.trim();
+    const nom = machineNameInput.value.trim();
+    if(!code || !nom) return alert('Code et Nom requis');
+
+    if(editMachineId){
+        await fetch(`http://localhost:3000/api/machines/${editMachineId}`, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({code, nom})
+        });
+    } else {
+        await fetch('http://localhost:3000/api/machines', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({code, nom, atelier_id: atelierId, x:0, y:0})
+        });
+    }
+    machineModal.style.display='none';
+    loadMachines();
+});
+
+loadMachines();

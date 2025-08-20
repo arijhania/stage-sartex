@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ateliers - Prototype</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f9fc;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: linear-gradient(to right, #3a7bd5, #00d2ff);
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    header h1 { margin: 0; font-size: 24px; cursor:pointer;}
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #3a7bd5;
+      color: white;
+    }
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+    .add-btn { background-color: #3a7bd5; color: white; }
+    .edit-btn { background-color: #f0ad4e; color: white; }
+    .delete-btn { background-color: #d9534f; color: white; }
+    .add-btn:hover { background-color: #1f5fa1; }
+    .edit-btn:hover { background-color: #ec971f; }
+    .delete-btn:hover { background-color: #c9302c; }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .modal-content button {
+      width: 100%;
+      margin-top: 10px;
+      background-color: #3a7bd5;
+      color: white;
+      font-weight: bold;
+    }
+    .modal-content button:hover { background-color: #1f5fa1; }
+
+    /* Lien atelier */
+    .atelier-link { cursor:pointer; color:blue; text-decoration:underline; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Ateliers</h1>
+    <button id="logoutBtn">Se déconnecter</button>
+  </header>
+
+  <div class="container">
+    <button class="add-btn" id="addAtelierBtn">Ajouter Atelier</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="atelierTableBody">
+        <!-- Les ateliers seront injectés ici -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal pour ajouter / modifier -->
+  <div class="modal" id="atelierModal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Ajouter Atelier</h3>
+      <input type="text" id="atelierName" placeholder="Nom de l'atelier">
+      <button id="saveAtelierBtn">Sauvegarder</button>
+    </div>
+  </div>
+
+  <script src="js/ateliers.js"></script>
+</body>
+</html>
