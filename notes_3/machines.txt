@@ -1,3 +1,136 @@
+///////////////// html 
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Machines - Atelier</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+body { font-family:'Segoe UI', Arial, sans-serif; margin:0; background:#f7f9fc; }
+header { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; background:linear-gradient(to right,#3a7bd5,#00d2ff); color:white; }
+header h1 { margin:0; font-size:24px; }
+#logoutBtn, #backBtn { padding:6px 12px; border:none; border-radius:4px; cursor:pointer; background:white; color:#333; font-weight:bold; margin-left:5px;}
+#main { display:flex; margin:20px; gap:20px; position:relative; }
+
+/* Sidebar */
+#sidebar { width:300px; background:white; padding:15px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:flex; flex-direction:column; transition:0.3s; }
+#sidebar h3 { margin-top:10px; margin-bottom:5px; }
+#searchInput { padding:6px 10px; margin-bottom:10px;margin-left: 50px ; border-radius:4px; border:1px solid #ccc; }
+#addMachineBtn { margin-bottom:10px; background:#3a7bd5; color:white; font-weight:bold; padding:8px; border-radius:5px; cursor:pointer; }
+#addMachineBtn:hover { background:#1f5fa1; }
+.machine-item { padding:8px 10px; margin-bottom:6px; background:#3a7bd5; color:white; cursor:pointer; border-radius:6px; transition:0.2s; }
+.machine-item:hover { background:#1f5fa1; }
+
+/* Canvas */
+#canvas { flex:1; background:white; border-radius:8px; height:500px; position:relative; box-shadow:0 4px 10px rgba(0,0,0,0.1); overflow:hidden; }
+
+/* Canvas machine */
+.canvas-machine { position:absolute; cursor:move; transition:0.2s; text-align:center; }
+.canvas-machine img { width:90px; height:90px; border-radius:8px; display:block; margin:0 auto; } /* Agrandi */
+.machine-label { font-size:13px; font-weight:bold; margin-top:4px; padding:2px 6px; border-radius:4px; color:white; }
+
+/* Mini-map */
+#minimap { position:absolute; bottom:20px; right:20px; width:200px; height:150px; background:rgba(0,0,0,0.1); border:1px solid #333; border-radius:6px; overflow:hidden; z-index:1000; }
+#minimap-canvas { position:relative; width:100%; height:100%; }
+.minimap-machine { position:absolute; width:8px; height:8px; background:#3a7bd5; border-radius:2px; cursor:pointer; }
+
+/* Modals */
+.modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+.modal-content { background:white; padding:20px; border-radius:8px; width:350px; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+.modal-content input { width:100%; padding:6px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc; }
+.modal-content button { width:100%; padding:8px; background:#3a7bd5; color:white; border:none; border-radius:4px; cursor:pointer; }
+.modal-content button:hover { background:#1f5fa1; }
+
+/* Button retirer machine */
+#removeFromPlanBtn { background:#ff7f50; margin-top:10px; }
+#removeFromPlanBtn:hover { background:#e05530; }
+
+/* Toggle Sidebar icon */
+#toggleSidebarBtn { position:absolute; top:10px; left:10px; background:#3a7bd5; color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:20px; z-index:1001; display:flex; justify-content:center; align-items:center; }
+#toggleSidebarBtn:hover { background:#1f5fa1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div><button id="backBtn">&larr; Ateliers</button></div>
+  <h1 id="atelierTitle">Machines</h1>
+  <button id="logoutBtn">Se déconnecter</button>
+</header>
+
+<div id="main">
+  <div id="sidebar">
+    <input type="text" id="searchInput" placeholder="Rechercher une machine...">
+    <button id="addMachineBtn">Ajouter Machine</button>
+    <h3>Machines disponibles</h3>
+    <div id="machineList"></div>
+  </div>
+
+  <div id="canvas"></div>
+
+  <!-- Toggle sidebar icon -->
+  <button id="toggleSidebarBtn">&#9776;</button>
+
+  <!-- Mini-map -->
+  <div id="minimap">
+    <div id="minimap-canvas"></div>
+  </div>
+</div>
+
+<!-- Modal Ajouter / Modifier -->
+<div class="modal" id="machineModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Ajouter Machine</h3>
+    <input type="text" id="machineCode" placeholder="Code">
+    <input type="text" id="machineName" placeholder="Nom">
+    <button id="saveMachineBtn">Sauvegarder</button>
+  </div>
+</div>
+
+<!-- Modal Infos -->
+<div class="modal" id="infoModal">
+  <div class="modal-content" id="infoContent">
+    <h3>Infos Machine</h3>
+    <div id="machineInfo"></div>
+    <button id="removeFromPlanBtn">Retirer du plan</button>
+    <button onclick="infoModal.style.display='none'">Fermer</button>
+  </div>
+</div>
+
+<script src="js/machines.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////js
+
+
+
+
+
+
+
 if(!sessionStorage.getItem('atelierId')) window.location.href='ateliers.html';
 
 const atelierId = sessionStorage.getItem('atelierId');
@@ -5,7 +138,6 @@ const role = sessionStorage.getItem('role');
 document.getElementById('atelierTitle').textContent=`Machines - Atelier ${atelierId}`;
 
 const machineListDiv = document.getElementById('machineList');
-const canvasWrapper = document.getElementById('canvas-wrapper');
 const canvas = document.getElementById('canvas');
 const minimapCanvas = document.getElementById('minimap-canvas');
 const addBtn = document.getElementById('addMachineBtn');
@@ -22,31 +154,11 @@ const searchInput = document.getElementById('searchInput');
 const removeBtn = document.getElementById('removeFromPlanBtn');
 const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
 
-
-const statusSelect = document.getElementById('statusSelect');
-const updateStatusBtn = document.getElementById('updateStatusBtn');
-
-
-const STATUS_COLORS = {
-    running: 'green',
-    stopped: 'red',
-    idle: 'orange'
-};
-
-
-
-
 let machinesSidebar = [];
 let machinesCanvas = [];
 let editMachineId = null;
 let selectedMachineId = null;
 let sidebarVisible = true;
-
-// Zoom
-let scale = 1;
-function applyZoom() {
-  canvas.style.transform = `scale(${scale})`;
-}
 
 // Retour ateliers
 backBtn.addEventListener('click',()=>{window.location.href='ateliers.html';});
@@ -108,9 +220,7 @@ canvas.addEventListener('dragover', e=>e.preventDefault());
 canvas.addEventListener('drop', async e=>{
     if(role!=="admin") return alert("Droits insuffisants !");
     if(!draggedId) return;
-    const rect = canvas.getBoundingClientRect();
-    const x=(e.clientX - rect.left) / scale;
-    const y=(e.clientY - rect.top) / scale;
+    const x=e.offsetX, y=e.offsetY;
     await fetch(`http://localhost:3000/api/machines/${draggedId}`, {
         method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({x,y})
     });
@@ -129,9 +239,8 @@ function renderCanvas(){
 
         const label = document.createElement('div');
         label.className='machine-label';
-       label.style.background = STATUS_COLORS[m.status] || 'gray';
-       label.innerHTML = `${m.nom} - ${m.status || 'stopped'}`;
-
+        label.style.background = m.status==='actif'?'green':'red';
+        label.innerHTML=`${m.nom} - ${m.status || 'inactif'}`;
         div.appendChild(label);
 
         const img=document.createElement('img');
@@ -148,8 +257,6 @@ function renderCanvas(){
                 <p>X:${info.x}</p>
                 <p>Y:${info.y}</p>
             `;
-
-             statusSelect.value = info.status || 'stopped'; 
             infoModal.style.display='flex';
         };
         div.appendChild(img);
@@ -173,12 +280,11 @@ function dragMouseDown(e){
 }
 async function elementDrag(e){
     e.preventDefault();
-    currentDiv.style.left=( (e.clientX-offsetX) / scale )+'px';
-    currentDiv.style.top=( (e.clientY-offsetY) / scale )+'px';
+    currentDiv.style.left=(e.clientX-offsetX)+'px';
+    currentDiv.style.top=(e.clientY-offsetY)+'px';
 }
 async function closeDragElement(){
     document.onmouseup=null; document.onmousemove=null;
-    if(!currentDiv) return;
     const id=currentDiv.dataset.id;
     const x=parseInt(currentDiv.style.left), y=parseInt(currentDiv.style.top);
     await fetch(`http://localhost:3000/api/machines/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({x,y})});
@@ -201,31 +307,12 @@ if(role==="admin"){
     });
 }
 
-
-
-// Modifier statut
-updateStatusBtn.addEventListener('click', async ()=>{
-    if(!selectedMachineId) return;
-    const newStatus = statusSelect.value;
-    await fetch(`http://localhost:3000/api/machines/${selectedMachineId}`, {
-        method:'PUT',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ status: newStatus })
-    });
-    infoModal.style.display='none';
-    loadMachines();
-});
-
-
-
-
-
 // Mini-map
 function renderMinimap(){
     minimapCanvas.innerHTML='';
     const canvasRect = canvas.getBoundingClientRect();
-    const scaleX = minimapCanvas.clientWidth / (canvasRect.width/scale);
-    const scaleY = minimapCanvas.clientHeight / (canvasRect.height/scale);
+    const scaleX = minimapCanvas.clientWidth / canvasRect.width;
+    const scaleY = minimapCanvas.clientHeight / canvasRect.height;
 
     machinesCanvas.forEach(m=>{
         const mini=document.createElement('div');
@@ -233,7 +320,7 @@ function renderMinimap(){
         mini.style.left=(m.x*scaleX)+'px';
         mini.style.top=(m.y*scaleY)+'px';
         mini.title=m.nom;
-        mini.onclick=()=>{ canvasWrapper.scrollLeft = m.x - canvasRect.width/2; canvasWrapper.scrollTop = m.y - canvasRect.height/2; };
+        mini.onclick=()=>{ canvas.scrollLeft = m.x - canvasRect.width/2; canvas.scrollTop = m.y - canvasRect.height/2; };
         minimapCanvas.appendChild(mini);
     });
 }
@@ -252,19 +339,6 @@ removeBtn.addEventListener('click', async ()=>{
     infoModal.style.display='none';
     renderSidebar();
     renderCanvas();
-});
-
-// Zoom controls
-document.getElementById('zoomInBtn').addEventListener('click', ()=>{ scale *= 1.2; applyZoom(); });
-document.getElementById('zoomOutBtn').addEventListener('click', ()=>{ scale /= 1.2; applyZoom(); });
-document.getElementById('resetZoomBtn').addEventListener('click', ()=>{ scale = 1; applyZoom(); });
-
-// Zoom molette
-canvasWrapper.addEventListener('wheel', e=>{
-    e.preventDefault();
-    if(e.deltaY < 0) scale *= 1.1;
-    else scale /= 1.1;
-    applyZoom();
 });
 
 loadMachines();
