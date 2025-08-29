@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -26,7 +26,7 @@ header h1 { margin:0; font-size:24px; }
 
 /* Canvas machine */
 .canvas-machine { position:absolute; cursor:move; transition:0.2s; text-align:center; }
-.canvas-machine img { width:90px; height:90px; border-radius:8px; display:block; margin:0 auto; } /* Agrandi */
+.canvas-machine img { width:90px; height:90px; border-radius:8px; display:block; margin:0 auto; }
 .machine-label { font-size:13px; font-weight:bold; margin-top:4px; padding:2px 6px; border-radius:4px; color:white; }
 
 /* Mini-map */
@@ -36,7 +36,7 @@ header h1 { margin:0; font-size:24px; }
 
 /* Modals */
 .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
-.modal-content { background:white; padding:20px; border-radius:8px; width:350px; box-shadow:0 4px 12px rgba(0,0,0,0.25);}
+.modal-content { background:white; padding:20px; border-radius:8px; width:350px; box-shadow:0 4px 12px rgba(0,0,0,0.25); }
 .modal-content input { width:100%; padding:6px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc; }
 .modal-content button { width:100%; padding:8px; background:#3a7bd5; color:white; border:none; border-radius:4px; cursor:pointer; }
 .modal-content button:hover { background:#1f5fa1; }
@@ -73,12 +73,14 @@ header h1 { margin:0; font-size:24px; }
 
   <div id="canvas-wrapper">
     <div id="canvas"></div>
+
     <!-- Zoom controls -->
     <div id="zoom-controls">
       <button id="zoomInBtn"> +</button>
       <button id="zoomOutBtn">-</button>
       <button id="resetZoomBtn">⟳</button>
     </div>
+
     <!-- Mini-map -->
     <div id="minimap">
       <div id="minimap-canvas"></div>
@@ -105,17 +107,16 @@ header h1 { margin:0; font-size:24px; }
     <h3>Infos Machine</h3>
     <div id="machineInfo"></div>
 
-
- <!-- Nouveau select pour le statut -->
-    <label for="statusSelect">Statut :</label>
-    <select id="statusSelect">
-      <option value="running">running</option>
-      <option value="stopped">stopped</option>
-      <option value="idle">idle</option>
-    </select>
-    <button id="updateStatusBtn">Modifier statut</button>
-
-
+    <!-- Contrôles statut (masqués pour user) -->
+    <div id="statusControls">
+      <label for="statusSelect">Statut :</label>
+      <select id="statusSelect">
+        <option value="running">running</option>
+        <option value="stopped">stopped</option>
+        <option value="idle">idle</option>
+      </select>
+      <button id="updateStatusBtn">Modifier statut</button>
+    </div>
 
     <button id="removeFromPlanBtn">Retirer du plan</button>
     <button onclick="infoModal.style.display='none'">Fermer</button>
